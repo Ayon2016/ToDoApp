@@ -1,0 +1,539 @@
+﻿
+@{
+    ViewBag.Title = "IndexSignalR";
+}
+
+
+@*<script src="https://code.jquery.com/jquery-2.1.4.js"></script>*@
+
+<h2>OrgZilla- SignalR</h2>
+<img src="~/Content/Tasks.png" style="text-align:center;padding-left:250px" />
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+
+
+            <ul id="ulTasks"></ul>
+
+            <a id="addTask" href="#">Add a new Task</a>
+            <div class="form-horizontal AddTask" style="display:none">
+                <h4>To-do Item</h4>
+                <hr />
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <label class="control-label col-md-2" for="Task">Task</label>
+                        <input class="form-control text-box single-line" id="Task" name="Task" type="text" value="">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <label class="control-label col-md-2" for="DateCompleted">Date Completed</label>
+                        <input class="form-control text-box single-line" data-val="true" data-val-date="The field DateCompleted must be a date." id="DateCompleted" name="DateCompleted" type="datetime" value="">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <label class="control-label col-md-2" for="CategoryId">CategoryId</label>
+                        <select class="form-control" id="CategoryId">
+                            @*<option value="1">Work</option>
+                                <option value="2">Home</option>*@
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Create" id="btnCreate" class="btn btn-default" />
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+@section scripts{
+<script src="~/Scripts/jquery.signalR-2.2.2.js"></script>
+<script src="~/signalr/hubs"></script>
+<script>
+    $(function () {
+   
+        var list = $.connection.todoHub;
+     
+        list.client.getIndexPage = function (response) {
+            var parsedData = JSON.parse(response);
+            var html = "";
+           
+            $.each(parsedData, function (i, item) {
+                console.log(item);
+
+                //html = html + '<tr><td></td><td></td><td></td></tr>'
+                //'</table>';
+                if (item.DateCompleted == null) {
+                    html = '<li class="list-group-item" id="listcontent-' + item.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">' + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + item.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + item.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + item.Id + '">Mark Complete</a>' + '</span > <strong>' + item.Task + '</strong></li > ';
+                }
+                else {
+                    html = '<li class="list-group-item" id="listcontent-' + item.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">'
+                        + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + item.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + item.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + item.Id + '">Completed</a>' + '</span > <strong>' + item.Task + '</strong></li > ';
+                }
+
+
+                $('#ulTasks').append(html);
+                // $("#CategoryId").append('<option value="' + CategoryId + '">' + Category.Name + '</option>');
+
+            });
+        }
+        list.client.createTask = function (response) {
+            var html = "";
+            var responseObj = JSON.parse(response);
+            //html = html + '<tr><td></td><td></td><td></td></tr>'
+            //'</table>';
+
+            if (responseObj.DateCompleted == null) {
+                html = '<li class="list-group-item" id="listcontent-' + responseObj.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">' + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + responseObj.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + responseObj.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + responseObj.Id + '">Mark Complete</a>' + '</span > <strong>' + responseObj.Task + '</strong></li > ';
+            }
+            else {
+                html = '<li class="list-group-item" id="listcontent-' + responseObj.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">'
+                    + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + responseObj.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + responseObj.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + responseObj.Id + '">Completed</a>' + '</span > <strong>' + responseObj.Task + '</strong></li > ';
+            }
+
+
+
+            $('#ulTasks').append(html);
+            $('.form-horizontal').hide();
+            $('#addTask').show();
+            $('#Task').val("");
+        }
+        list.client.deleteTask = function (id) {
+            $('#listcontent-' + id).remove();
+        }
+        list.client.completedTask = function (id) {
+            $('#completeitem-' + id).text('Completed');
+        }
+        list.client.editForm = function (response) {
+            var item = JSON.parse(response);
+            console.log(item);
+            var newHtml = '<div id = "dvEditForm_' +
+                item.Id +
+                '"><br/>' +
+                '<form id="editForm_' +
+                item.Id +
+                '">' +
+                '<div class="form-group">' +
+                '<label class = "control-label col-md-2">Task</label>' +
+                '<input class = "form-control editTask" id="txtTask" value="' +
+                item.Task +
+                '">' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label class = "control-label col-md-2">Date Completed</label>' +
+                '<input class = "form-control editDateCompleted" id="txtDateCompleted" value="' +
+                item.DateCompleted +
+                '"></div>' +
+                '</form>' +
+                '<a id="btnEditSave_' +
+                item.Id +
+                '"' +
+                'class="btn btn-link editSave">Save</a>|<a class="btn btn-link btnEditCancel" id="btnEditCancel_' +
+                item.Id +
+                '"' +
+                'class="btn btn-link editCancel">Cancel</a></div>';
+            //$('#task-'+id).find('.task').html(newHtml);
+
+            $('#ulTasks').append(newHtml);
+        };
+        list.client.saveEditForm = function (response) {
+            var items = JSON.parse(response);
+          
+            //var html = '';
+
+            var html = "";
+
+            //html = '<table class="table">' +
+            //    '<tr>' +
+            //    '<th>Name</th><th>Task</th><th>Date Completed</th>' + '<th></th></tr > '
+            $('#ulTasks').html('');
+
+            $.each(items, function (i, item) {
+            
+                //html = html + '<tr><td></td><td></td><td></td></tr>'
+                //'</table>';
+                if (item.DateCompleted == null) {
+                    html = '<li class="list-group-item" id="listcontent-' + item.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">' + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + item.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + item.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + item.Id + '">Mark Complete</a>' + '</span > <strong>' + item.Task + '</strong></li > ';
+                }
+                else {
+                    html = '<li class="list-group-item" id="listcontent-' + item.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">'
+                        + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + item.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + item.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + item.Id + '">Completed</a>' + '</span > <strong>' + item.Task + '</strong></li > ';
+                }
+
+                $('#ulTasks').append(html);
+                // $("#CategoryId").append('<option value="' + CategoryId + '">' + Category.Name + '</option>');
+                $('#dvEditForm_' + item.Id).remove();
+            });
+
+       
+
+
+            //$('#task-' + itemID).remove();
+            //$('.list-group').append(html);
+            //$('#task-' + itemID).find('.divButtons').show();
+
+        }
+      
+        $.connection.hub.start().done(function () {
+            list.server.getIndexData(); 
+            $(document).on('click', '#btnCreate', function () {
+              
+                var values = JSON.stringify({
+                    Task: $('#Task').val(),
+                    DateCompleted: $("#DateCompleted").val(),
+                    CategoryId: $("#CategoryId").val()
+                  
+                });
+
+                list.server.createForm(values);
+            });
+            $(document).on('click', '.btn-danger', function () {
+              
+                var confirmation = confirm("Are you sure you want to delete this Task?");
+                if (!confirmation) {
+                    return;
+                }
+                //var id = $(this).attr('id').split('-')[1];
+                var itemId = $(this).attr('id');
+                var id = itemId.split("-")[1];
+              
+                list.server.deleteTask(id);
+
+            });
+            $(document).on('click', '.completed', function () {
+
+          
+                //var id = $(this).attr('id').split('-')[1];
+                var itemId = $(this).attr('id');
+                var id = itemId.split("-")[1];
+          
+                list.server.completeTask(id);
+
+            });
+            $(document).on('click', '.btnEdit', function () {
+                var id = $(this).attr('id').split('-')[1];
+                list.server.getEditTask(id);
+               
+            });
+            $(document).on('click', '.editSave', function () {
+                var id = $(this).attr('id').split('_')[1];
+              
+
+                var Id = id;
+                var TaskName = $(".editTask").val();
+                var CompletedDate = $(".editDateCompleted").val();
+                //var CategoryId = $(".editCategoryType").val();
+              
+
+                list.server.saveEdit(Id, TaskName, CompletedDate);
+            });
+            $(document).on('click', '.btnEditCancel', function () {
+                var id = $(this).attr('id').split('_')[1];
+                $('#dvEditForm_' + id).remove();
+            });
+            $(document).on('click', '.btnEditCancel', function () {
+                var id = $(this).attr('id').split('_')[1];
+                $('#dvEditForm_' + id).remove();
+            });
+
+           
+            });
+        });
+
+            
+
+
+    ////$(function () {
+
+    ////    // load Tasks via ajax
+    ////    $.ajax({
+    ////        url: '/TodoItems/Index/',
+    ////        dataType: 'json',
+    ////        contentType: 'application/json',
+    ////        method: 'GET',
+    ////        data: {
+    ////            json: JSON.stringify({}),
+    ////            delay: 2
+    ////        }
+    ////    }).done(function (responseData, status, xhr) {
+    ////        console.log(responseData);
+    ////        var html = "";
+
+    ////        //html = '<table class="table">' +
+    ////        //    '<tr>' +
+    ////        //    '<th>Name</th><th>Task</th><th>Date Completed</th>' + '<th></th></tr > '
+
+    ////        $.each(responseData, function (i, item) {
+
+    ////            //html = html + '<tr><td></td><td></td><td></td></tr>'
+    ////            //'</table>';
+    ////            if (item.DateCompleted == null) {
+    ////                html = '<li class="list-group-item" id="listcontent-' + item.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">' + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + item.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + item.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + item.Id + '">Mark Complete</a>' + '</span > <strong>' + item.Task + '</strong></li > ';
+    ////            }
+    ////            else {
+    ////                html = '<li class="list-group-item" id="listcontent-' + item.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">'
+    ////                    + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + item.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + item.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + item.Id + '">Completed</a>' + '</span > <strong>' + item.Task + '</strong></li > ';
+    ////            }
+
+
+    ////            $('#ulTasks').append(html);
+    ////            // $("#CategoryId").append('<option value="' + CategoryId + '">' + Category.Name + '</option>');
+
+    ////        });
+
+
+
+    ////        if (responseData.length > 0) {
+    ////            $(".alert-warning").hide();
+    ////        }
+
+    ////    }).error(function (xhr, status, error) {
+    ////        $(".alert-danger").show().text("There was an error loading your book");
+    ////    });
+    ////});
+
+    ////$(document).on('click', '.btnEdit', function () {
+
+    ////    var itemID = $(this).attr('id').split('-')[1];
+
+    ////    $.ajax({
+    ////        url: '/TodoItems/Edit',
+    ////        dataType: 'html',
+    ////        content: 'application/json',
+    ////        method: 'GET',
+    ////        data: {
+    ////            id: itemID
+    ////        },
+    ////        success: function (response) {
+    ////            var item = JSON.parse(response);
+    ////            var newHtml = '<div id = "dvEditForm_' +
+    ////                item.Id +
+    ////                '"><br/>' +
+    ////                '<form id="editForm_' +
+    ////                item.Id +
+    ////                '">' +
+    ////                '<div class="form-group">' +
+    ////                '<label class = "control-label col-md-2">Task</label>' +
+    ////                '<input class = "form-control editTask" id="txtTask" value="' +
+    ////                item.Task +
+    ////                '">' +
+    ////                '</div>' +
+    ////                '<div class="form-group">' +
+    ////                '<label class = "control-label col-md-2">Date Completed</label>' +
+    ////                '<input class = "form-control editDateCompleted" id="txtDateCompleted" value="' +
+    ////                item.DateCompleted +
+    ////                '"></div>' +
+    ////                '</form>' +
+    ////                '<a id="btnEditSave_' +
+    ////                itemID +
+    ////                '"' +
+    ////                'class="btn btn-link editSave">Save</a>|<a class="btn btn-link btnEditCancel" id="btnEditCancel_' +
+    ////                itemID +
+    ////                '"' +
+    ////                'class="btn btn-link editCancel">Cancel</a></div>';
+    ////            //$('#task-'+id).find('.task').html(newHtml);
+
+    ////            $('#ulTasks').append(newHtml);
+
+    ////        }
+    ////    }).fail(function (xhr, status, error) {
+    ////        $("#error").show();
+    ////    });
+    ////});
+    ////$(document).on('click', '.btnEditCancel', function () {
+    ////    var itemID = $(this).attr('id').split('_')[1];
+    ////    $('#dvEditForm_' + itemID).remove();
+    ////    $('#task-' + itemID).find('.divButtons').show();
+    ////});
+
+    //$(document).on('click', '.editSave', function () {
+    //    var itemID = $(this).attr('id').split('_')[1];
+    //    $.ajax({
+    //        url: "/TodoItems/EditSave/",
+    //        method: 'POST',
+    //        dataType: 'json',
+    //        contentType: 'application/json',
+    //        data: JSON.stringify({
+    //            Id: itemID,
+    //            CompletedDate: $(".editDateCompleted").val(),
+    //            TaskName: $(".editTask").val()
+    //        }),
+
+    //        success: function (responseJson) {
+    //            var items = JSON.parse(JSON.stringify(responseJson));
+    //            var html = '';
+
+    //            var html = "";
+
+    //            //html = '<table class="table">' +
+    //            //    '<tr>' +
+    //            //    '<th>Name</th><th>Task</th><th>Date Completed</th>' + '<th></th></tr > '
+    //            $('#ulTasks').html('');
+
+    //            $.each(items, function (i, item) {
+
+    //                //html = html + '<tr><td></td><td></td><td></td></tr>'
+    //                //'</table>';
+    //                if (item.DateCompleted == null) {
+    //                    html = '<li class="list-group-item" id="listcontent-' + item.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">' + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + item.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + item.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + item.Id + '">Mark Complete</a>' + '</span > <strong>' + item.Task + '</strong></li > ';
+    //                }
+    //                else {
+    //                    html = '<li class="list-group-item" id="listcontent-' + item.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">'
+    //                        + '<a class="btn btn-xs btn-warning btnEdit" id="edititem-' + item.Id + '">Edit</a>' + ' ' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + item.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + item.Id + '">Completed</a>' + '</span > <strong>' + item.Task + '</strong></li > ';
+    //                }
+
+    //                $('#ulTasks').append(html);
+    //                // $("#CategoryId").append('<option value="' + CategoryId + '">' + Category.Name + '</option>');
+
+    //            });
+
+    //            $('#dvEditForm_' + itemID).remove();
+
+
+    //            //$('#task-' + itemID).remove();
+    //            //$('.list-group').append(html);
+    //            //$('#task-' + itemID).find('.divButtons').show();
+
+    //        }
+    //    }).fail(function (xhr, status, error) {
+    //        $("#error").show();
+    //    });;
+    //});
+
+    //// Delete Tasks
+    ////$(document).on('click', '.btn-danger', function () {
+
+    ////    var confirmation = confirm("Are you sure you want to delete this Task?");
+    ////    if (!confirmation) {
+    ////        return;
+    ////    }
+    ////    var id = $(this).attr('id').split('-')[1];
+
+    ////    // create the request JSON
+    ////    var requestData = {
+    ////        id: id
+    ////    };
+
+    ////    $.ajax({
+    ////        url: "/TodoItems/DeleteConfirmed/",
+    ////        dataType: 'html',
+    ////        method: 'POST',
+    ////        data: {
+    ////            id: id
+    ////        },
+    ////        success: function (response) {
+
+
+    ////            $('#listcontent-' + id).remove();
+
+    ////            //showItemlist(response);
+    ////        }
+    ////    }).error(function (xhr, status, error) {
+    ////        $("#error").show();
+    ////    });
+    ////});
+    ////Mark Completed
+    //$(document).on('click', '.completed', function () {
+
+
+    //    var id = $(this).attr('id').split('-')[1];
+
+    //    // create the request JSON
+    //    var requestData = {
+    //        id: id
+    //    };
+
+    //    $.ajax({
+    //        url: "/TodoItems/Completed/",
+    //        dataType: 'text',
+    //        method: 'POST',
+    //        data: {
+    //            id: id
+    //        },
+    //        success: function (response) {
+
+
+    //            $('#completeitem-' + id).text('Completed');
+
+    //            //showItemlist(response);
+    //        }
+    //    }).error(function (xhr, status, error) {
+    //        $("#error").show();
+    //    });
+    //});
+    $("#addTask").click(function () {
+        $(".AddTask").show();
+        $("#addTask").hide();
+        $("#Task").focus();
+    });
+    ////$(document).on('click', '#btnCreate', function () {
+
+
+    ////    var TaskName = $('#Task').val();
+    ////    var category = $('#CategoryId').val();
+
+    ////    // create the request JSON
+
+
+    ////    $.ajax({
+    ////        url: "/TodoItems/Create/",
+    ////        dataType: 'json',
+    ////        method: 'POST',
+    ////        data: {
+
+    ////            'Task': TaskName,
+    ////            'DateCompleted': '',
+    ////            'CategoryId': category
+    ////        },
+
+    ////        success: function (response) {
+    ////           // console.log(response);
+
+    ////            var html = "";
+
+    ////            //html = html + '<tr><td></td><td></td><td></td></tr>'
+    ////            //'</table>';
+
+    ////            html = '<li class="list-group-item" id="listcontent-' + response.Id + '"><span class="pull-right" style="padding-top: 5px; padding-right: 5px;">' + '<a class="btn btn-xs btn-danger" id="deleteItem-' + response.Id + '">Delete</a>' + ' ' + '<a class="btn btn-xs btn-primary btn-xs completed" id="completeitem-' + response.Id + '">Mark Complete</a>' + '</span > <strong>' + response.Task + '</strong></li > ';
+
+
+
+    ////            $('#ulTasks').append(html);
+    ////            $('.form-horizontal').hide();
+    ////            $('#addTask').show();
+    ////            $('#Task').val("");
+
+
+    ////            //showItemlist(response);
+    ////        }
+    ////    }).error(function (xhr, status, error) {
+    ////        $("#error").show();
+    ////    });
+    ////});
+    $.ajax({
+        url: "/Categories/Cat/",
+        dataType: 'json',
+        method: 'GET',
+        data: {},
+
+        success: function (response) {
+            //console.log(response);
+            //console.log(response.Id);
+            $.each(response, function (i, item) {
+                $("#CategoryId").append('<option value="' + item.Id + '">' + item.Name + '</option>');
+            });
+        }
+    });
+
+</script>
+}
+
+

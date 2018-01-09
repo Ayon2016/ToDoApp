@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row" style="margin-top: 20px;">
+    <div class="col-md-8 col-md-offset-2">
+        <div id="ListContent">
+            @{ Html.RenderPartial("_ToDoList"); }
+        </div>
+    </div>
+</div>
+

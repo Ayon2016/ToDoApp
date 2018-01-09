@@ -1,0 +1,32 @@
+﻿@model IEnumerable<IS8012.AyonChoudhury.LabProject.Models.TodoItem>
+<h2>On your shelf</h2>
+<ul class="list-group">
+    @if (Model.Any())
+    {
+        foreach (var list in Model)
+        {
+            <li class="list-group-item" id="listcontent-@list.Id">
+                @{ Html.RenderPartial("_ToDo", list); }
+            </li>
+
+                        }
+                    }
+                    else
+                    {
+        <li class="list-group-item">
+            <div class="alert alert-info">No Items on your list</div>
+        </li>
+    }
+    <div id="createFormContent">
+        <li class="list-group-item">
+            <div class="text-center">
+                @Ajax.ActionLink(
+                "Add new Item",
+                "Create",
+                new { controller = "ToDoItems" },
+                new AjaxOptions { UpdateTargetId = "createFormContent" },
+                new { @class = "btn btn-primary" })
+            </div>
+        </li>
+    </div>
+</ul>

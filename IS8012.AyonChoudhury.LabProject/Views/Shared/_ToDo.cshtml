@@ -1,0 +1,17 @@
+﻿@model IS8012.AyonChoudhury.LabProject.Models.TodoItem
+
+ <span class="pull-right" style="padding-top: 5px; padding-right: 5px;">
+    @Ajax.ActionLink("delete", "Delete", new { controller = "TodoItems", Id = Model.Id }, new AjaxOptions
+   {
+       HttpMethod = "POST",
+       InsertionMode = InsertionMode.ReplaceWith,
+       UpdateTargetId = "listcontent-" + Model.Id,
+       Confirm = "Are you sure you want to delete " + Model.Task + "?",
+   }, new
+   {
+       @class = "btn btn-xs btn-danger"
+   })
+</span>
+
+<strong>@Model.Task</strong>
+

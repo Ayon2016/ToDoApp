@@ -1,0 +1,15 @@
+﻿@model IS8012.AyonChoudhury.LabProject.Models.TodoItem
+
+<li class="list-group-item" id="listcontent-@Model.Id">
+    @{ Html.RenderPartial("_ToDo", Model); }
+</li>
+<li class="list-group-item" id="createFormContent">
+    <div class="text-center">
+        @Ajax.ActionLink(
+            "Add new item",
+            "Create",
+            new { controller = "TodoItems" },
+            new AjaxOptions { UpdateTargetId = "createFormContent" },
+            new { @class = "btn btn-primary" })
+    </div>
+</li>

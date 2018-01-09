@@ -1,0 +1,101 @@
+﻿<script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+<script>
+    window.onload = function () {
+        $(function () {
+            $("#btnCreate").click(function () {
+                var task = $("#Task").val();
+                var date = $("#DateCompleted").val();
+                var category = $("#CategoryId").val();
+                var formData = {
+                    task: task,
+                    date: date,
+                    category: category
+                };
+                console.log("New Task", formData);
+            });
+        });
+        $(".completed").click(function () {
+            var taskID = $(this).parents(".list-group-item:first").attr("id");
+            console.log("Completed Task ID=", taskID);
+        });
+        $(".delete").click(function () {
+            var TaskId = $(this).parents(".list-group-item:first").attr("data-task-id");
+            var title = $(this).parents(".list-group-item:first").find("strong").text();
+            if (confirm("Are you sure you want to delete " + title + "?")) {
+                $(this).parents(".list-group-item:first").remove();
+            }
+        });
+    }
+</script>
+
+<h2>Dummy View</h2>
+<ul class="list-group">
+    <li class="list-group-item" data-task-id="1" id="listcontent-14">
+        <span class="pull-right" style="padding-top: 5px; padding-right: 5px;">
+            <a class="btn btn-xs btn-danger delete">delete</a>
+            <a class="btn btn-xs btn-primary btn-xs completed">Completed</a>
+        </span>
+
+        <strong>Complete Dotnet Assignment</strong>
+
+
+    </li>
+    <li class="list-group-item" data-task-id="2" id="listcontent-15">
+        <span class="pull-right" style="padding-top: 5px; padding-right: 5px;">
+            <a class="btn btn-xs btn-danger delete">delete</a>
+            <a class="btn btn-xs btn-primary btn-xs completed">Completed</a>
+        </span>
+
+        <strong>Complete ITM Assignment</strong>
+
+
+    </li>
+    <li class="list-group-item" data-task-id="3" id="listcontent-24">
+        <span class="pull-right" style="padding-top: 5px; padding-right: 5px;">
+            <a class="btn btn-xs btn-danger delete">delete</a>
+            <a class="btn btn-xs btn-primary btn-xs completed">Completed</a>
+        </span>
+
+        <strong>Some task</strong>
+
+
+    </li>
+</ul>
+
+
+
+<div class="form-horizontal">
+    <h4>To-do Item</h4>
+    <hr />
+    <div class="form-group">
+        <div class="col-md-10">
+            <label class="control-label col-md-2" for="Task">Task</label>
+            <input class="form-control text-box single-line" id="Task" name="Task" type="text" value="">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-10">
+            <label class="control-label col-md-2" for="DateCompleted">Date Completed</label>
+            <input class="form-control text-box single-line" data-val="true" data-val-date="The field DateCompleted must be a date." id="DateCompleted" name="DateCompleted" type="datetime" value="">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-10">
+            <label class="control-label col-md-2" for="CategoryId">CategoryId</label>
+            <select class="form-control" id="CategoryId">
+                <option value="1">Work</option>
+                <option value="2">Home</option>
+                </select>
+</div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Create" id="btnCreate" class="btn btn-default" />
+        </div>
+    </div>
+</div>
+
+

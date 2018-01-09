@@ -1,0 +1,32 @@
+﻿
+@{
+    ViewBag.Title = "location";
+}
+<script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+<h2>location</h2>
+
+
+<div>
+    <button type="button" id="getlocation">Get Browser Location</button>
+    @*@{ Html.RenderPartial("_location"); }*@
+    <p id="coord"></p>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        if (Modernizr.geolocation) {
+            $('#getlocation').click(function () {
+
+                navigator.geolocation.getCurrentPosition(function (location) {
+                    var lat = location.coords.latitude;
+                    var long = location.coords.longitude;
+                    $('#coord').text("The Latitude is" + ' ' + lat + ' ' + "& Longitude is" + ' ' + long);
+                });
+
+            });
+       
+    }
+    else {
+        alert("Geo");
+        }
+    });
+</script>
